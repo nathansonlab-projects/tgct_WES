@@ -1,4 +1,4 @@
-setwd("~/Documents/nathansonlab/TECAC/WES/case_selection/")
+
 # pluta 8/4/21
 # determine caucasian v non-caucasian with k-means clustering and plot
 # need to manually update the WES db after each set of subjects
@@ -58,7 +58,7 @@ evec.dat <- evec.dat[ !(evec.dat$IID %in% wes$COLLABORATOR.ID.JOHNS.ID[wes$CASE_
 
 ctrls <- c()
 cases <- c()
-missing <- c()
+nogeno <- c()
 
 
 # list of cases to match
@@ -69,7 +69,7 @@ for( sub.id in sub.list$V1 )
 {
   if( !(sub.id %in% evec.dat$IID))
   {
-    missing <- c(missing, sub.id)
+    nogeno <- c(nogeno, sub.id)
   } else
   {
     PRE <- substr(sub.id,1,2)
@@ -92,13 +92,34 @@ for( sub.id in sub.list$V1 )
 }
 
 
-ctrls.df  <- data.frame( CASE = cases, MATCHEDCTRL  =  ctrls, CAGID = cagmap$CAG.ID[match(ctrls, cagmap$TECAC.ID)])
-missing.df <- data.frame( IID = missing, CAGID = cagmap$CAG.ID[match(missing, cagmap$TECAC.ID)])
+out.df  <- data.frame( CASES = cases, 
+                         CAGID.CASES = cagmap$CAG.ID[match(cases, cagmap$TECAC.ID)],
+                         MATCHEDCTRL  =  ctrls, 
+                         CAGID.CTRLS = cagmap$CAG.ID[match(ctrls, cagmap$TECAC.ID)])
 
-if(any(duplicated(ctrls.df$MATCHEDCTRL)))
+nogeno.df <- data.frame( IID = nogeno, CAGID = cagmap$CAG.ID[match(nogeno, cagmap$TECAC.ID)])
+
+
+if(any(duplicated(out.df$MATCHEDCTRL)))
 {
   stop("duplicate controls found")
 }
+
+if(any(duplicated(out.df$CASES)))
+{
+  stop("duplicate cases found")
+}
+
+if(any(duplicated(out.df$CAGID.CASES)))
+{
+  stop("duplicate CAGID cases found")
+}
+
+if(any(duplicated(out.df$CAGID.out)))
+{
+  stop("duplicate CAGID controls found")
+}
+
 
 
 evec.dat <- evec.dat.bak[ evec.dat.bak$Pheno != 3,]
@@ -115,8 +136,8 @@ dev.off()
 
 tmp <- evec.dat[ evec.dat$IID %in% c(cases, ctrls),]
 
-write.table(ctrls.df, OUTFILE, col.names = FALSE, row.names = FALSE, quote = FALSE)
-write.table(missing.df, "nogenosubs.txt", col.names = FALSE, row.names = FALSE, quote = FALSE)
+write.table(out.df, OUTFILE, col.names = TRUE, row.names = FALSE, quote = FALSE)
+write.table(nogeno.df, "nogenosubs.txt", col.names = TRUE, row.names = FALSE, quote = FALSE)
 # -------------------------------------------------------------------- #
 
 
