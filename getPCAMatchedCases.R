@@ -55,7 +55,9 @@ evec.dat <- evec.dat[ -grep("MDA", evec.dat$IID),]
 # exclude cases already controlled
 evec.dat <- evec.dat[ !(evec.dat$IID %in% wes$COLLABORATOR.ID.JOHNS.ID[wes$CASE_CTRL.TEXT == "CTRL"]),]
 
-
+# controls  with famhx of tgct- dont use these
+famhx.ctrls <- read.table("famhx_ctrls.txt", header = F)
+evec.dat <- evec.dat[ !(evec.dat$IID %in% famhx.ctrls),]
 ctrls <- c()
 cases <- c()
 nogeno <- c()
